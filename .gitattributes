@@ -1,0 +1,2 @@
+# Hooks run under sh (Git Bash on Windows). CRLF line endings would break them silently.
+*.sh text eol=lf

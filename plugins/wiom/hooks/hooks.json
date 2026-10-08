@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "UserPromptExpansion": [
+      { "hooks": [{ "type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/wiom-hook.sh\" expansion", "timeout": 30 }] }
+    ],
+    "UserPromptSubmit": [
+      { "hooks": [{ "type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/wiom-hook.sh\" prompt", "timeout": 30 }] }
+    ],
+    "Stop": [
+      { "hooks": [{ "type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/wiom-hook.sh\" stop", "timeout": 60 }] }
+    ],
+    "SessionStart": [
+      { "matcher": "resume|compact", "hooks": [{ "type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/wiom-hook.sh\" sessionstart", "timeout": 30 }] }
+    ],
+    "SessionEnd": [
+      { "hooks": [{ "type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/wiom-hook.sh\" sessionend", "timeout": 30 }] }
+    ]
+  }
+}
