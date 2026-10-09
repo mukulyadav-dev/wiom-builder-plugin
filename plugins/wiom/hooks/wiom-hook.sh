@@ -7,7 +7,7 @@
 
 EVENT="$1"
 VERSION="0.1.0"
-URL="${CLAUDE_PLUGIN_OPTION_SERVER_URL:-https://builder.wiom.in}"
+URL="${CLAUDE_PLUGIN_OPTION_SERVER_URL:-https://wiom-builder-production.up.railway.app}"
 URL="${URL%/}"
 TOKEN="${CLAUDE_PLUGIN_OPTION_API_TOKEN:-}"
 DATA="${CLAUDE_PLUGIN_DATA:-$HOME/.wiom-builder}"

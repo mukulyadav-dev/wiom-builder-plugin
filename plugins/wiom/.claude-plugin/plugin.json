@@ -15,7 +15,7 @@
       "type": "string",
       "title": "Wiom Builder server",
       "description": "Leave as is unless the Wiom Builder team tells you otherwise.",
-      "default": "https://builder.wiom.in"
+      "default": "https://wiom-builder-production.up.railway.app"
     }
   }
 }

@@ -4,7 +4,7 @@ Claude Code marketplace `wiom-builder` with one plugin, `wiom`. It holds only th
 
 ## Install (builders)
 1. Install Claude Code (Desktop app or terminal) and sign in with your Claude Pro/Max account. Windows: also install Git for Windows.
-2. In Claude Code: `/plugin marketplace add wiom-tech/wiom-builder-plugin`, then `/plugin install wiom@wiom-builder`, and paste your token when asked.
+2. In Claude Code: `/plugin marketplace add mukulyadav-dev/wiom-builder-plugin`, then `/plugin install wiom@wiom-builder`, and paste your token when asked.
 3. Run `/wiom:define-problem <what prompted this>`. To continue a case: `/wiom:define-problem continue PD-…`.
 
 ## Privacy
