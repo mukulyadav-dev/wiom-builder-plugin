@@ -1,6 +1,6 @@
 {
   "name": "wiom",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Wiom Builder agents. Run /wiom:define-problem to turn a concern into a reviewed problem brief.",
   "author": { "name": "Wiom" },
   "userConfig": {

@@ -1,12 +1,13 @@
 #!/bin/sh
-# Wiom Builder hook (macOS / Linux). Usage: wiom-hook.sh <expansion|prompt|stop|sessionstart|sessionend>
+# Wiom Builder hook (macOS / Linux / Git Bash). Usage: wiom-hook.sh <expansion|prompt|stop|posttool|sessionstart|sessionend>
 #
 # Privacy rule: nothing leaves this machine unless the session ran a /wiom:* command.
 # Such sessions are flagged in $DATA/sessions/<session_id>; every other session exits immediately.
-# Must never block Claude Code: all failures exit 0. Only "expansion" and "sessionstart" print to stdout.
+# Must never block Claude Code: all failures exit 0. Only "expansion" and "sessionstart" print model context;
+# "posttool" may print a systemMessage (shown to the builder, not the model) after writing a brief file.
 
 EVENT="$1"
-VERSION="0.1.0"
+VERSION="0.1.1"
 URL="${CLAUDE_PLUGIN_OPTION_SERVER_URL:-https://wiom-builder-production.up.railway.app}"
 URL="${URL%/}"
 TOKEN="${CLAUDE_PLUGIN_OPTION_API_TOKEN:-}"
@@ -41,9 +42,26 @@ inject() { # inject <hookEventName> <text without double quotes or backslashes>
 
 state_get() { sed -n "s/^$1=//p" "$FLAG" 2>/dev/null | head -n 1; }
 
-state_write() { # state_write <transcript_path> <offset>
+state_write() { # state_write <transcript_path> <offset>  (also records the upload time for throttling)
   tmp="$FLAG.tmp.$$"
-  printf 'path=%s\noffset=%s\n' "$1" "$2" > "$tmp" && mv "$tmp" "$FLAG"
+  printf 'path=%s\noffset=%s\nlast=%s\n' "$1" "$2" "$(date +%s)" > "$tmp" && mv "$tmp" "$FLAG"
+}
+
+# Write the latest saved brief of <case> to <cwd>/wiom-briefs/<case>.md and tell the builder.
+write_brief() {
+  c=$(printf '%s' "$1" | sed -e 's/^[pP][dD]-/PD-/' -e 's/^[cC][dD]-/CD-/')
+  c="${c%-*}-$(printf '%s' "${c##*-}" | tr 'A-F' 'a-f')"
+  case "$c" in PD-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]|CD-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]) ;; *) return 0 ;; esac
+  dir=$(field cwd); [ -n "$dir" ] && [ -d "$dir" ] || dir="$HOME"
+  dir="$dir/wiom-briefs"
+  mkdir -p "$dir" 2>/dev/null || return 0
+  tmp="$dir/.$c.md.$$"
+  if api "/hooks/brief?case_id=$c" -o "$tmp" 2>/dev/null; then
+    mv "$tmp" "$dir/$c.md" && printf '{"systemMessage":"Wiom Builder: brief saved to %s"}\n' "wiom-briefs/$c.md"
+  else
+    rm -f "$tmp"
+  fi
+  return 0
 }
 
 # Send transcript bytes appended since the last upload. The server stores complete lines and
@@ -83,6 +101,22 @@ case "$EVENT" in
     ;;
   prompt|stop)
     [ -f "$FLAG" ] && upload >/dev/null 2>&1
+    ;;
+  posttool)
+    [ -f "$FLAG" ] || exit 0
+    TOOL=$(field tool_name)
+    case "$TOOL" in
+      *wiom__save_brief|*wiom__submit_brief)
+        upload >/dev/null 2>&1
+        write_brief "$(field case_id)"
+        ;;
+      *)
+        # During long turns, upload at most every 15 seconds so the console stays near real time.
+        now=$(date +%s); last=$(state_get last)
+        case "$last" in ""|*[!0-9]*) last=0 ;; esac
+        [ $((now - last)) -ge 15 ] && upload >/dev/null 2>&1
+        ;;
+    esac
     ;;
   sessionstart)
     [ -f "$FLAG" ] || exit 0
