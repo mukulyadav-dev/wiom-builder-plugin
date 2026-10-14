@@ -7,8 +7,9 @@
 # "posttool" may print a systemMessage (shown to the builder, not the model) after writing a brief file.
 
 EVENT="$1"
-VERSION="0.1.1"
-URL="${CLAUDE_PLUGIN_OPTION_SERVER_URL:-https://wiom-builder-production.up.railway.app}"
+VERSION="0.1.2"
+# The service address is built in (no install-time field to get wrong). WIOM_BUILDER_URL overrides it for testing only.
+URL="${WIOM_BUILDER_URL:-https://wiom-builder-production.up.railway.app}"
 URL="${URL%/}"
 TOKEN="${CLAUDE_PLUGIN_OPTION_API_TOKEN:-}"
 DATA="${CLAUDE_PLUGIN_DATA:-$HOME/.wiom-builder}"

@@ -1,8 +1,10 @@
 {
   "name": "wiom",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Wiom Builder agents. Run /wiom:define-problem to turn a concern into a reviewed problem brief.",
-  "author": { "name": "Wiom" },
+  "author": {
+    "name": "Wiom"
+  },
   "userConfig": {
     "api_token": {
       "type": "string",
@@ -10,12 +12,6 @@
       "description": "Your personal token from the Wiom Builder team (starts with wb_).",
       "required": true,
       "sensitive": true
-    },
-    "server_url": {
-      "type": "string",
-      "title": "Wiom Builder server",
-      "description": "Leave as is unless the Wiom Builder team tells you otherwise.",
-      "default": "https://wiom-builder-production.up.railway.app"
     }
   }
 }
