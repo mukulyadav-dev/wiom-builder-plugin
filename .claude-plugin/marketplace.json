@@ -1,12 +1,16 @@
 {
   "name": "wiom-builder",
-  "owner": { "name": "Wiom" },
-  "metadata": { "description": "Wiom Builder agents. All Wiom content is served from the Wiom Builder service; this repository holds only the plugin plumbing." },
+  "owner": {
+    "name": "Wiom"
+  },
+  "metadata": {
+    "description": "Wiom Builder agents. All Wiom content is served from the Wiom Builder service; this repository holds only the plugin plumbing."
+  },
   "plugins": [
     {
       "name": "wiom",
       "source": "./plugins/wiom",
-      "description": "Wiom Builder: problem definition agent (more stages to follow)."
+      "description": "Wiom Builder: problem definition and solution design agents."
     }
   ]
 }

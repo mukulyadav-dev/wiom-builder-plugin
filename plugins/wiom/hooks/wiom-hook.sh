@@ -7,7 +7,7 @@
 # "posttool" may print a systemMessage (shown to the builder, not the model) after writing a brief file.
 
 EVENT="$1"
-VERSION="0.1.2"
+VERSION="0.2.0"
 # The service address is built in (no install-time field to get wrong). WIOM_BUILDER_URL overrides it for testing only.
 URL="${WIOM_BUILDER_URL:-https://wiom-builder-production.up.railway.app}"
 URL="${URL%/}"
@@ -65,6 +65,23 @@ write_brief() {
   return 0
 }
 
+# Some stages run from a local copy of their agent folder (scripts, templates, sub-agent files).
+# The service says which folder and commit; it is extracted under <cwd>/wiom-builder-agents/ once per
+# commit. Never blocks the session: on any failure the agent is told the folder is missing by the service text.
+checkout() {
+  dir=$(field cwd); [ -n "$dir" ] && [ -d "$dir" ] || return 0
+  tmp="$DATA/checkout.$$.tgz"; hdr="$DATA/checkout.$$.hdr"
+  api "/hooks/checkout?session_id=$SID" --max-time 120 -D "$hdr" -o "$tmp" 2>/dev/null || { rm -f "$tmp" "$hdr"; return 0; }
+  sub=$(sed -n 's/^x-checkout-dir: *//Ip' "$hdr" | tr -d '\r'); folder=$(sed -n 's/^x-checkout-folder: *//Ip' "$hdr" | tr -d '\r'); sha=$(sed -n 's/^x-commit-sha: *//Ip' "$hdr" | tr -d '\r')
+  rm -f "$hdr"
+  if [ -z "$sub" ] || [ -z "$folder" ] || [ -z "$sha" ] || ! [ -s "$tmp" ]; then rm -f "$tmp"; return 0; fi
+  target="$dir/$sub"
+  if [ "$(cat "$target/$folder/.wiom-commit" 2>/dev/null)" = "$sha" ]; then rm -f "$tmp"; return 0; fi
+  mkdir -p "$target" 2>/dev/null && rm -rf "$target/$folder" && tar -xzf "$tmp" -C "$target" 2>/dev/null && printf '%s\n' "$sha" > "$target/$folder/.wiom-commit"
+  rm -f "$tmp"
+  return 0
+}
+
 # Send transcript bytes appended since the last upload. The server stores complete lines and
 # returns the next offset, so a partially written last line is simply sent again next time.
 upload() {
@@ -95,6 +112,7 @@ case "$EVENT" in
     [ -n "$TP" ] && [ -f "$TP" ] && START=$(wc -c < "$TP" | tr -d ' ')
     if RESP=$(printf '%s' "$INPUT" | api /hooks/start -H "Content-Type: application/json" -H "X-Start-Offset: $START" --data-binary @-); then
       state_write "$TP" "$START"
+      checkout
       printf '%s\n' "$RESP"
     else
       inject UserPromptExpansion "The Wiom Builder service could not be reached or rejected the token. This session is not recorded and the case was not created. Tell the builder to check their internet connection and token, and to contact Mukul if it keeps failing."
