@@ -1,6 +1,6 @@
 {
   "name": "wiom",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Wiom Builder agents. /wiom:define-problem turns a concern into a reviewed problem brief; /wiom:design-solution takes a problem to a reviewed solution concept.",
   "author": {
     "name": "Wiom"
